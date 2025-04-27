@@ -1,0 +1,8 @@
+[package]
+name = "anon_credential"
+type = "bin"
+authors = [""]
+
+[dependencies]
+
+
