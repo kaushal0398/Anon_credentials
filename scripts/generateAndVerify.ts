@@ -1,14 +1,14 @@
-// scripts/generateAndVerify.ts
 import { ethers } from "hardhat";
 import fs from "fs";
 
 async function main() {
-  const verifierAddress = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"; // your deployed verifier
+  const verifierAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3"; // your deployed verifier
 
   // Step 1: Mock proof and public inputs
   const mockProof = "0xabcdef";
   const mockPublicInputs = ["0", "0", "0", "0"];
 
+  fs.mkdirSync("proofs", { recursive: true });
   fs.writeFileSync("proofs/proof.json", JSON.stringify({ proof: mockProof }, null, 2));
   fs.writeFileSync("proofs/public_inputs.json", JSON.stringify(mockPublicInputs, null, 2));
 
@@ -21,9 +21,12 @@ async function main() {
   const proofBytes = proofJson.proof;
   const publicInputs = publicInputsJson;
 
-  const Verifier = await ethers.getContractAt("PlonkVerifier", verifierAddress);
+  // Correct contract loading
+  const Verifier = await ethers.getContractFactory("PlonkVerifier");
+  const verifier = await Verifier.attach(verifierAddress);
 
-  const verified = await Verifier.verify(proofBytes, publicInputs);
+  // Step 3: Call verify()
+  const verified = await verifier.verify(proofBytes, publicInputs);
 
   console.log("✅ Proof verified:", verified);
 }

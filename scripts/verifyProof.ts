@@ -1,9 +1,8 @@
-// scripts/verifyProof.ts
 import { ethers } from "hardhat";
 import fs from "fs";
 
 async function main() {
-  const verifierAddress = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"; // your deployed verifier address
+  const verifierAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3"; // your deployed verifier address
 
   // Load proof and public inputs
   const proofJson = JSON.parse(fs.readFileSync("proofs/proof.json", "utf8"));
@@ -12,11 +11,13 @@ async function main() {
   const proofBytes = proofJson.proof;
   const publicInputs = publicInputsJson;
 
-  const Verifier = await ethers.getContractAt("PlonkVerifier", verifierAddress);
+  // CORRECT way: load factory and attach to deployed address
+  const Verifier = await ethers.getContractFactory("PlonkVerifier");
+  const verifier = await Verifier.attach(verifierAddress);
 
-  const result = await Verifier.verify(proofBytes, publicInputs);
+  const verified = await verifier.verify(proofBytes, publicInputs);
 
-  console.log("✅ Proof verified:", result);
+  console.log("✅ Proof verified:", verified);
 }
 
 main().catch((error) => {
