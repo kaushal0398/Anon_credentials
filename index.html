@@ -17,24 +17,57 @@
   <!-- Load Babel -->
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <style>
+    /* Update text colors to ensure visibility */
     body {
-      background-color: #ffffff !important;
-      color: #333333 !important;
-      font-family: 'Inter', sans-serif;
+      background-color: #f5f5f5;
+      color: #333; /* Dark text color for better visibility */
+      font-family: Arial, sans-serif;
     }
     
-    /* Override any Tailwind dark mode settings */
-    .bg-gray-800, .bg-gray-900, .bg-black {
-      background-color: #ffffff !important;
+    h1, h2, h3 {
+      color: #000; /* Ensure headers are black for visibility */
     }
     
-    .text-white {
-      color: #333333 !important;
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
     }
     
-    /* Only buttons and specific elements should have white text */
-    .bg-gradient-to-r.text-white {
-      color: white !important;
+    .description {
+      color: #333; /* Ensure description text is visible */
+      margin-bottom: 20px;
+    }
+    
+    button {
+      background-color: #4CAF50;
+      color: white;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 5px 0;
+    }
+    
+    button:hover {
+      background-color: #45a049;
+    }
+    
+    input, select {
+      padding: 8px;
+      margin: 5px 0;
+      display: block;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    
+    .result {
+      margin-top: 20px;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      background-color: #f9f9f9;
+      color: #333; /* Ensure result text is visible */
     }
   </style>
 </head>
@@ -58,8 +91,8 @@
           <div className="container mx-auto px-4 py-4 flex justify-between items-center">
             <Link to="/" className="text-xl font-bold flex items-center">
               <span className="mr-2">🔐</span>
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#9D71E8] to-[#C4A8FF]">
-                AZTEC
+              <span className="text-black">
+                ANON-CRED
               </span>
             </Link>
             <div className="flex space-x-6">
@@ -100,7 +133,7 @@
       return (
         <div className="max-w-4xl mx-auto bg-white">
           <div className="text-center mb-16">
-            <h1 className="text-5xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-[#9D71E8] to-[#C4A8FF]">
+            <h1 className="text-3xl font-bold mb-6 bg-clip-text text-black bg-gradient-to-r from-[#9D71E8] to-[#C4A8FF]">
               Anonymous Credential Prover
             </h1>
             <p className="text-xl text-gray-600 mb-8">
@@ -108,7 +141,7 @@
             </p>
             <Link 
               to="/prove" 
-              className="inline-block bg-gradient-to-r from-[#9D71E8] to-[#C4A8FF] text-white px-8 py-4 rounded-md hover:opacity-90 transition-all shadow-lg text-lg font-medium"
+              className="inline-block bg-gradient-to-r from-[#9D71E8] to-[#C4A8FF] text-black px-8 py-4 rounded-md hover:opacity-90 transition-all shadow-lg text-lg font-medium"
             >
               Start Proof
             </Link>
@@ -203,7 +236,7 @@
       return (
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-[#9D71E8] to-[#C4A8FF]">
+            <h1 className="text-4xl font-bold mb-4 bg-clip-text text-black bg-gradient-to-r from-[#9D71E8] to-[#C4A8FF]">
               Generate Anonymous Proof
             </h1>
             <p className="text-xl text-gray-600">
@@ -434,7 +467,7 @@
       return (
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-[#9D71E8] to-[#C4A8FF]">
+            <h1 className="text-4xl font-bold mb-4 bg-clip-text text-black bg-gradient-to-r from-[#9D71E8] to-[#C4A8FF]">
               Admin Dashboard
             </h1>
             <p className="text-xl text-gray-600">
