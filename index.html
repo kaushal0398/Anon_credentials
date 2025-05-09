@@ -134,10 +134,10 @@
         <div className="max-w-4xl mx-auto bg-white">
           <div className="text-center mb-16">
             <h1 className="text-3xl font-bold mb-6 bg-clip-text text-black bg-gradient-to-r from-[#9D71E8] to-[#C4A8FF]">
-              Anonymous Credential Prover
+              AnonCred: Anonymous Credential Verification
             </h1>
             <p className="text-xl text-gray-600 mb-8">
-              Prove you're part of a group without revealing who you are.
+              Prove your credentials without revealing your identity using zero-knowledge proofs.
             </p>
             <Link 
               to="/prove" 
@@ -149,29 +149,62 @@
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
             <div className="bg-white p-6 rounded-lg shadow-md border border-[#9D71E8]">
-              <h2 className="text-2xl font-semibold mb-4 text-[#9D71E8]">What is Zero-Knowledge?</h2>
+              <h2 className="text-2xl font-semibold mb-4 text-[#9D71E8]">The Problem</h2>
               <p className="text-gray-600">
-                Zero-knowledge proofs allow you to prove you know something or have certain attributes without revealing the actual information. It's like proving you're over 21 without showing your ID or revealing your exact age.
+                In today's world, proving eligibility (age, citizenship, certification) usually involves disclosing personal data, leading to serious privacy concerns in sensitive applications like voting, healthcare, or decentralized finance.
               </p>
             </div>
             <div className="bg-white p-6 rounded-lg shadow-md border border-[#9D71E8]">
-              <h2 className="text-2xl font-semibold mb-4 text-[#9D71E8]">How It Works</h2>
+              <h2 className="text-2xl font-semibold mb-4 text-[#9D71E8]">Our Solution</h2>
               <p className="text-gray-600">
-                This application uses Aztec's zero-knowledge proof technology to let you prove membership in a group (like a whitelist or DAO) and perform one-time anonymous actions without revealing your identity.
+                AnonCred uses zero-knowledge proofs (ZKPs) to enable anonymous yet verifiable credential validation. Users can prove they possess a valid credential without revealing their identity or sensitive data.
               </p>
             </div>
           </div>
 
           <div className="bg-white p-6 rounded-lg shadow-md border border-[#9D71E8] mb-16">
-            <h2 className="text-2xl font-semibold mb-4 text-[#9D71E8]">Anonymous Actions</h2>
-            <p className="text-gray-600 mb-4">
-              With your anonymous credential, you can perform one-time actions like:
-            </p>
-            <ul className="list-disc pl-6 text-gray-600 space-y-2">
-              <li>Casting a vote without revealing your identity</li>
-              <li>Sending a message anonymously</li>
-              <li>Claiming a benefit while maintaining privacy</li>
-            </ul>
+            <h2 className="text-2xl font-semibold mb-4 text-[#9D71E8]">Use Cases</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="p-4 bg-gray-50 rounded-lg">
+                <h3 className="font-semibold text-[#9D71E8] mb-2">Anonymous Voting</h3>
+                <p className="text-gray-600">Prove you're a voter without revealing who you are</p>
+              </div>
+              <div className="p-4 bg-gray-50 rounded-lg">
+                <h3 className="font-semibold text-[#9D71E8] mb-2">DAO Participation</h3>
+                <p className="text-gray-600">Validate membership without linking wallets to real identities</p>
+              </div>
+              <div className="p-4 bg-gray-50 rounded-lg">
+                <h3 className="font-semibold text-[#9D71E8] mb-2">Healthcare Access</h3>
+                <p className="text-gray-600">Prove medical credentials without exposing history</p>
+              </div>
+              <div className="p-4 bg-gray-50 rounded-lg">
+                <h3 className="font-semibold text-[#9D71E8] mb-2">Age Verification</h3>
+                <p className="text-gray-600">Prove over-18 status without revealing birthdate</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white p-6 rounded-lg shadow-md border border-[#9D71E8] mb-16">
+            <h2 className="text-2xl font-semibold mb-4 text-[#9D71E8]">Technical Architecture</h2>
+            <div className="space-y-4">
+              <div className="p-4 bg-gray-50 rounded-lg">
+                <h3 className="font-semibold text-[#9D71E8] mb-2">Core Components</h3>
+                <ul className="list-disc pl-6 text-gray-600 space-y-2">
+                  <li>Noir (ZK language) for proof logic</li>
+                  <li>zk-SNARKs for efficient verification</li>
+                  <li>Hardhat + Ethers.js for deployment</li>
+                  <li>Solidity Verifier Contract for on-chain validation</li>
+                </ul>
+              </div>
+              <div className="p-4 bg-gray-50 rounded-lg">
+                <h3 className="font-semibold text-[#9D71E8] mb-2">Proof Flow</h3>
+                <ol className="list-decimal pl-6 text-gray-600 space-y-2">
+                  <li>User generates ZK proof off-chain</li>
+                  <li>User submits proof and public signals to smart contract</li>
+                  <li>Contract verifies proof using verifier logic (Groth16)</li>
+                </ol>
+              </div>
+            </div>
           </div>
         </div>
       );
@@ -179,11 +212,41 @@
 
     // Prove Component
     function Prove() {
+      const [credentialType, setCredentialType] = React.useState('age');
       const [userIndex, setUserIndex] = React.useState(0);
       const [signal, setSignal] = React.useState(1);
       const [loading, setLoading] = React.useState(false);
       const [proof, setProof] = React.useState(null);
       const [error, setError] = React.useState(null);
+      const [step, setStep] = React.useState(1);
+
+      const credentialTypes = {
+        age: {
+          name: "Age Verification",
+          description: "Prove you are over 18 without revealing your exact age",
+          signalOptions: [
+            { value: 1, label: "Yes, I am over 18" },
+            { value: 0, label: "No, I am under 18" }
+          ]
+        },
+        dao: {
+          name: "DAO Membership",
+          description: "Prove you are a member of a DAO without revealing your wallet address",
+          signalOptions: [
+            { value: 1, label: "Vote Yes" },
+            { value: 0, label: "Vote No" },
+            { value: 2, label: "Abstain" }
+          ]
+        },
+        healthcare: {
+          name: "Healthcare Access",
+          description: "Prove you have valid medical credentials without revealing your medical history",
+          signalOptions: [
+            { value: 1, label: "Access Granted" },
+            { value: 0, label: "Access Denied" }
+          ]
+        }
+      };
 
       const handleGenerateProof = async (e) => {
         e.preventDefault();
@@ -207,11 +270,13 @@
                 "0x" + Math.random().toString(16).substr(2, 64),
                 "0x" + Math.random().toString(16).substr(2, 64)
               ],
-              signal: signal
+              signal: signal,
+              credential_type: credentialType
             };
             
             setProof(mockProof);
             setLoading(false);
+            setStep(3);
           }, 2000);
           
         } catch (err) {
@@ -233,6 +298,183 @@
         downloadAnchorNode.remove();
       };
 
+      const renderStep = () => {
+        switch(step) {
+          case 1:
+            return (
+              <div className="bg-white p-6 rounded-lg shadow-md border border-[#9D71E8] mb-8">
+                <h2 className="text-2xl font-semibold mb-4 text-[#9D71E8]">Select Credential Type</h2>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {Object.entries(credentialTypes).map(([key, type]) => (
+                    <div
+                      key={key}
+                      className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                        credentialType === key
+                          ? 'border-[#9D71E8] bg-purple-50'
+                          : 'border-gray-200 hover:border-[#9D71E8]'
+                      }`}
+                      onClick={() => {
+                        setCredentialType(key);
+                        setStep(2);
+                      }}
+                    >
+                      <h3 className="font-semibold text-[#9D71E8] mb-2">{type.name}</h3>
+                      <p className="text-sm text-gray-600">{type.description}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          case 2:
+            return (
+              <div className="bg-white p-6 rounded-lg shadow-md border border-[#9D71E8] mb-8">
+                <h2 className="text-2xl font-semibold mb-4 text-[#9D71E8]">
+                  {credentialTypes[credentialType].name}
+                </h2>
+                <form onSubmit={handleGenerateProof}>
+                  <div className="mb-6">
+                    <label htmlFor="userIndex" className="block text-[#9D71E8] mb-2 font-medium">
+                      Select Your User Index
+                    </label>
+                    <select
+                      id="userIndex"
+                      value={userIndex}
+                      onChange={(e) => setUserIndex(parseInt(e.target.value))}
+                      className="w-full p-3 bg-white border border-gray-300 rounded-md text-gray-700 focus:border-[#9D71E8] focus:ring focus:ring-[#9D71E8] focus:ring-opacity-50"
+                    >
+                      {[0, 1, 2, 3, 4, 5, 6, 7].map((index) => (
+                        <option key={index} value={index}>
+                          User {index}
+                        </option>
+                      ))}
+                    </select>
+                    <p className="mt-2 text-sm text-gray-500">
+                      This represents your position in the membership Merkle tree.
+                    </p>
+                  </div>
+
+                  <div className="mb-6">
+                    <label className="block text-[#9D71E8] mb-2 font-medium">
+                      Select Your Action
+                    </label>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {credentialTypes[credentialType].signalOptions.map((option) => (
+                        <div
+                          key={option.value}
+                          className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                            signal === option.value
+                              ? 'border-[#9D71E8] bg-purple-50'
+                              : 'border-gray-200 hover:border-[#9D71E8]'
+                          }`}
+                          onClick={() => setSignal(option.value)}
+                        >
+                          <p className="font-medium text-gray-800">{option.label}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex gap-4">
+                    <button
+                      type="button"
+                      onClick={() => setStep(1)}
+                      className="flex-1 bg-gray-100 text-gray-700 px-6 py-3 rounded-md hover:bg-gray-200 transition-all"
+                    >
+                      Back
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="flex-1 bg-gradient-to-r from-[#9D71E8] to-[#C4A8FF] text-white px-6 py-3 rounded-md hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+                    >
+                      {loading ? (
+                        <span className="flex items-center justify-center">
+                          <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Generating Proof...
+                        </span>
+                      ) : (
+                        'Generate Proof'
+                      )}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            );
+          case 3:
+            return (
+              <div className="bg-white p-6 rounded-lg shadow-md border border-[#9D71E8] mb-8">
+                <h2 className="text-2xl font-semibold mb-4 text-[#9D71E8]">Proof Generated Successfully!</h2>
+                
+                <div className="mb-6">
+                  <h3 className="text-lg font-medium text-[#9D71E8] mb-2">Credential Type</h3>
+                  <div className="bg-gray-50 p-3 rounded-md text-gray-700">
+                    {credentialTypes[proof.credential_type].name}
+                  </div>
+                </div>
+
+                <div className="mb-6">
+                  <h3 className="text-lg font-medium text-[#9D71E8] mb-2">Nullifier Hash</h3>
+                  <div className="bg-gray-50 p-3 rounded-md overflow-x-auto text-green-600 font-mono">
+                    {proof.nullifier_hash}
+                  </div>
+                </div>
+                
+                <div className="mb-6">
+                  <h3 className="text-lg font-medium text-[#9D71E8] mb-2">Merkle Root</h3>
+                  <div className="bg-gray-50 p-3 rounded-md overflow-x-auto text-green-600 font-mono">
+                    {proof.root}
+                  </div>
+                </div>
+                
+                <div className="mb-6">
+                  <h3 className="text-lg font-medium text-[#9D71E8] mb-2">Signal</h3>
+                  <div className="bg-gray-50 p-3 rounded-md overflow-x-auto text-green-600 font-mono">
+                    {credentialTypes[proof.credential_type].signalOptions.find(opt => opt.value === proof.signal)?.label}
+                  </div>
+                </div>
+                
+                <div className="mb-6">
+                  <h3 className="text-lg font-medium text-[#9D71E8] mb-2">Proof Data</h3>
+                  <pre className="bg-gray-50 p-3 rounded-md overflow-x-auto text-green-600 font-mono text-sm">
+                    {JSON.stringify(proof.proof, null, 2)}
+                  </pre>
+                </div>
+                
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <button
+                    onClick={downloadProof}
+                    className="bg-gradient-to-r from-[#9D71E8] to-[#C4A8FF] text-white px-6 py-3 rounded-md hover:opacity-90 transition-all shadow-lg"
+                  >
+                    Download Proof
+                  </button>
+                  
+                  <button
+                    onClick={() => {
+                      setStep(1);
+                      setProof(null);
+                    }}
+                    className="bg-gray-100 text-gray-700 px-6 py-3 rounded-md hover:bg-gray-200 transition-all"
+                  >
+                    Generate New Proof
+                  </button>
+                  
+                  <Link
+                    to="/admin"
+                    className="bg-gray-100 text-gray-700 px-6 py-3 rounded-md hover:bg-gray-200 transition-all text-center"
+                  >
+                    Go to Admin Page
+                  </Link>
+                </div>
+              </div>
+            );
+          default:
+            return null;
+        }
+      };
+
       return (
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-8">
@@ -240,7 +482,7 @@
               Generate Anonymous Proof
             </h1>
             <p className="text-xl text-gray-600">
-              Create a zero-knowledge proof of your membership
+              Create a zero-knowledge proof of your credentials
             </p>
           </div>
 
@@ -251,115 +493,7 @@
             </div>
           )}
 
-          <div className="bg-white p-6 rounded-lg shadow-md border border-[#9D71E8] mb-8">
-            <form onSubmit={handleGenerateProof}>
-              <div className="mb-6">
-                <label htmlFor="userIndex" className="block text-[#9D71E8] mb-2 font-medium">
-                  Select Your User Index
-                </label>
-                <select
-                  id="userIndex"
-                  value={userIndex}
-                  onChange={(e) => setUserIndex(parseInt(e.target.value))}
-                  className="w-full p-3 bg-white border border-gray-300 rounded-md text-gray-700 focus:border-[#9D71E8] focus:ring focus:ring-[#9D71E8] focus:ring-opacity-50"
-                >
-                  {[0, 1, 2, 3, 4, 5, 6, 7].map((index) => (
-                    <option key={index} value={index}>
-                      User {index}
-                    </option>
-                  ))}
-                </select>
-                <p className="mt-2 text-sm text-gray-500">
-                  This represents your position in the membership Merkle tree.
-                </p>
-              </div>
-
-              <div className="mb-6">
-                <label htmlFor="signal" className="block text-[#9D71E8] mb-2 font-medium">
-                  Signal Value
-                </label>
-                <input
-                  id="signal"
-                  type="number"
-                  min="0"
-                  value={signal}
-                  onChange={(e) => setSignal(parseInt(e.target.value))}
-                  className="w-full p-3 bg-white border border-gray-300 rounded-md text-gray-700 focus:border-[#9D71E8] focus:ring focus:ring-[#9D71E8] focus:ring-opacity-50"
-                />
-                <p className="mt-2 text-sm text-gray-500">
-                  For voting: 1 = Yes, 0 = No, 2 = Abstain
-                </p>
-              </div>
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-gradient-to-r from-[#9D71E8] to-[#C4A8FF] text-white px-6 py-3 rounded-md hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
-              >
-                {loading ? (
-                  <span className="flex items-center justify-center">
-                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Generating Proof...
-                  </span>
-                ) : (
-                  'Generate Proof'
-                )}
-              </button>
-            </form>
-          </div>
-
-          {proof && (
-            <div className="bg-white p-6 rounded-lg shadow-md border border-[#9D71E8] mb-8">
-              <h2 className="text-2xl font-semibold mb-4 text-[#9D71E8]">Generated Proof</h2>
-              
-              <div className="mb-4">
-                <h3 className="text-lg font-medium text-[#9D71E8] mb-2">Nullifier Hash</h3>
-                <div className="bg-gray-50 p-3 rounded-md overflow-x-auto text-green-600 font-mono">
-                  {proof.nullifier_hash}
-                </div>
-              </div>
-              
-              <div className="mb-4">
-                <h3 className="text-lg font-medium text-[#9D71E8] mb-2">Merkle Root</h3>
-                <div className="bg-gray-50 p-3 rounded-md overflow-x-auto text-green-600 font-mono">
-                  {proof.root}
-                </div>
-              </div>
-              
-              <div className="mb-4">
-                <h3 className="text-lg font-medium text-[#9D71E8] mb-2">Signal</h3>
-                <div className="bg-gray-50 p-3 rounded-md overflow-x-auto text-green-600 font-mono">
-                  {proof.signal}
-                </div>
-              </div>
-              
-              <div className="mb-6">
-                <h3 className="text-lg font-medium text-[#9D71E8] mb-2">Proof Data</h3>
-                <pre className="bg-gray-50 p-3 rounded-md overflow-x-auto text-green-600 font-mono text-sm">
-                  {JSON.stringify(proof.proof, null, 2)}
-                </pre>
-              </div>
-              
-              <div className="flex flex-col sm:flex-row gap-4">
-                <button
-                  onClick={downloadProof}
-                  className="bg-gradient-to-r from-[#9D71E8] to-[#C4A8FF] text-white px-6 py-3 rounded-md hover:opacity-90 transition-all shadow-lg"
-                >
-                  Download Proof
-                </button>
-                
-                <Link
-                  to="/admin"
-                  className="bg-gray-100 text-gray-700 px-6 py-3 rounded-md hover:bg-gray-200 transition-all text-center"
-                >
-                  Go to Admin Page
-                </Link>
-              </div>
-            </div>
-          )}
+          {renderStep()}
 
           <div className="text-center mt-8">
             <Link to="/" className="text-[#9D71E8] hover:text-[#C4A8FF] transition-colors">
@@ -376,18 +510,28 @@
       const [loading, setLoading] = React.useState(false);
       const [verificationResult, setVerificationResult] = React.useState(null);
       const [error, setError] = React.useState(null);
+      const [stats, setStats] = React.useState({
+        totalVerifications: 156,
+        successfulVerifications: 142,
+        failedVerifications: 14,
+        activeCredentials: 89
+      });
       
-      // Mock data for used nullifiers
+      // Mock data for used nullifiers with more relevant information
       const [usedNullifiers, setUsedNullifiers] = React.useState([
         {
           nullifier_hash: "0x7a23c2b583acb30ccf3a7a0e4b9508ac4f1a860d4c4e5bbd12a1d0041d2d1a23",
           timestamp: "2023-06-15T14:32:45Z",
-          signal: 1
+          credential_type: "Age Verification",
+          status: "Verified",
+          txHash: "0x1234...5678"
         },
         {
           nullifier_hash: "0x9c45e2f89a3e1c4d2a6b8f7e0d5c9b8a7654321f0e1d2c3b4a5678901234567",
           timestamp: "2023-06-14T09:17:22Z",
-          signal: 0
+          credential_type: "DAO Membership",
+          status: "Verified",
+          txHash: "0x8765...4321"
         }
       ]);
 
@@ -425,14 +569,15 @@
                 if (isNullifierUsed) {
                   setVerificationResult({
                     success: false,
-                    message: "Nullifier has already been used. Each identity can only perform this action once."
+                    message: "This credential has already been used. Each credential can only be used once for privacy protection."
                   });
                 } else {
                   // Simulate successful verification
                   setVerificationResult({
                     success: true,
-                    message: "Proof verified successfully! The action has been recorded on-chain.",
-                    txHash: "0x" + Math.random().toString(16).substr(2, 64)
+                    message: "Credential verified successfully! The verification has been recorded on-chain.",
+                    txHash: "0x" + Math.random().toString(16).substr(2, 64),
+                    credentialType: "Age Verification" // This would come from the proof data
                   });
                   
                   // Add to used nullifiers
@@ -440,10 +585,19 @@
                     {
                       nullifier_hash: proofData.nullifier_hash,
                       timestamp: new Date().toISOString(),
-                      signal: proofData.signal
+                      credential_type: "Age Verification", // This would come from the proof data
+                      status: "Verified",
+                      txHash: "0x" + Math.random().toString(16).substr(2, 64)
                     },
                     ...usedNullifiers
                   ]);
+
+                  // Update stats
+                  setStats(prev => ({
+                    ...prev,
+                    totalVerifications: prev.totalVerifications + 1,
+                    successfulVerifications: prev.successfulVerifications + 1
+                  }));
                 }
                 
                 setLoading(false);
@@ -471,8 +625,28 @@
               Admin Dashboard
             </h1>
             <p className="text-xl text-gray-600">
-              Verify proofs and view used nullifiers
+              Verify credentials and monitor system activity
             </p>
+          </div>
+
+          {/* Stats Overview */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <div className="bg-white p-4 rounded-lg shadow-md border border-[#9D71E8]">
+              <h3 className="text-sm font-medium text-gray-500">Total Verifications</h3>
+              <p className="text-2xl font-bold text-[#9D71E8]">{stats.totalVerifications}</p>
+            </div>
+            <div className="bg-white p-4 rounded-lg shadow-md border border-[#9D71E8]">
+              <h3 className="text-sm font-medium text-gray-500">Successful</h3>
+              <p className="text-2xl font-bold text-green-600">{stats.successfulVerifications}</p>
+            </div>
+            <div className="bg-white p-4 rounded-lg shadow-md border border-[#9D71E8]">
+              <h3 className="text-sm font-medium text-gray-500">Failed</h3>
+              <p className="text-2xl font-bold text-red-600">{stats.failedVerifications}</p>
+            </div>
+            <div className="bg-white p-4 rounded-lg shadow-md border border-[#9D71E8]">
+              <h3 className="text-sm font-medium text-gray-500">Active Credentials</h3>
+              <p className="text-2xl font-bold text-[#9D71E8]">{stats.activeCredentials}</p>
+            </div>
           </div>
 
           {error && (
@@ -498,7 +672,7 @@
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
             <div className="bg-white p-6 rounded-lg shadow-md border border-[#9D71E8]">
-              <h2 className="text-2xl font-semibold mb-4 text-[#9D71E8]">Verify Proof</h2>
+              <h2 className="text-2xl font-semibold mb-4 text-[#9D71E8]">Verify Credential</h2>
               <form onSubmit={handleVerifyProof}>
                 <div className="mb-6">
                   <label className="block text-[#9D71E8] mb-2 font-medium">
@@ -511,7 +685,7 @@
                     className="w-full p-3 bg-white border border-gray-300 rounded-md text-gray-700 focus:border-[#9D71E8] focus:outline-none"
                   />
                   <p className="mt-2 text-sm text-gray-500">
-                    Upload the proof.json file generated from the Prove page.
+                    Upload the proof.json file containing the zero-knowledge proof.
                   </p>
                 </div>
 
@@ -529,35 +703,39 @@
                       Verifying...
                     </span>
                   ) : (
-                    'Verify & Submit Proof'
+                    'Verify Credential'
                   )}
                 </button>
               </form>
             </div>
 
             <div className="bg-white p-6 rounded-lg shadow-md border border-[#9D71E8]">
-              <h2 className="text-2xl font-semibold mb-4 text-[#9D71E8]">Used Nullifiers</h2>
+              <h2 className="text-2xl font-semibold mb-4 text-[#9D71E8]">Recent Verifications</h2>
               {usedNullifiers.length > 0 ? (
                 <div className="overflow-x-auto">
                   <table className="min-w-full">
                     <thead>
                       <tr>
-                        <th className="px-4 py-2 text-left text-[#9D71E8]">Nullifier Hash</th>
-                        <th className="px-4 py-2 text-left text-[#9D71E8]">Timestamp</th>
-                        <th className="px-4 py-2 text-left text-[#9D71E8]">Signal</th>
+                        <th className="px-4 py-2 text-left text-[#9D71E8]">Credential Type</th>
+                        <th className="px-4 py-2 text-left text-[#9D71E8]">Status</th>
+                        <th className="px-4 py-2 text-left text-[#9D71E8]">Time</th>
                       </tr>
                     </thead>
                     <tbody>
                       {usedNullifiers.map((nullifier, index) => (
                         <tr key={index} className="border-t border-gray-200">
-                          <td className="px-4 py-2 font-mono text-sm text-gray-700 truncate max-w-[150px]">
-                            {nullifier.nullifier_hash}
+                          <td className="px-4 py-2 text-gray-700">
+                            {nullifier.credential_type}
+                          </td>
+                          <td className="px-4 py-2">
+                            <span className={`px-2 py-1 rounded-full text-xs ${
+                              nullifier.status === 'Verified' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                            }`}>
+                              {nullifier.status}
+                            </span>
                           </td>
                           <td className="px-4 py-2 text-gray-700">
                             {new Date(nullifier.timestamp).toLocaleString()}
-                          </td>
-                          <td className="px-4 py-2 text-gray-700">
-                            {nullifier.signal}
                           </td>
                         </tr>
                       ))}
@@ -565,7 +743,7 @@
                   </table>
                 </div>
               ) : (
-                <p className="text-gray-500">No nullifiers have been used yet.</p>
+                <p className="text-gray-500">No verifications have been performed yet.</p>
               )}
             </div>
           </div>
